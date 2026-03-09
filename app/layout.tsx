@@ -41,6 +41,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="flex flex-col min-h-screen overflow-x-hidden font-sans">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              console.clear();
+              console.log('%cHey dev', 'color: #00ff00; font-size: 20px; font-weight: bold;');
+              console.log = function() {};
+              console.warn = function() {};
+              console.error = function() {};
+              console.info = function() {};
+              console.debug = function() {};
+            `
+          }}
+        />
         <Providers>
           <ThemeProvider>
             <DndWrapper>

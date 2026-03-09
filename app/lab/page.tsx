@@ -40,7 +40,7 @@ import SaveConfirmation from '@/components/SaveConfirmation'
 
 export default function LabPage() {
     const router = useRouter()
-    const { syncExperiments, experiments, saveExperiment, isAuthenticated, isLoading } = useAuth()
+    const { syncExperiments, experiments, saveExperiment, toggleSaveExperiment, isAuthenticated, isLoading } = useAuth()
     const [currentExperiment, setCurrentExperiment] = useState<Experiment | null>(null)
 
     useEffect(() => {
@@ -67,7 +67,7 @@ export default function LabPage() {
     const [selectedTubeId, setSelectedTubeId] = useState('tube-1')
     const [openEquipmentPanel, setOpenEquipmentPanel] = useState(false)
     const [selectedTubeContents, setSelectedTubeContents] = useState<any[]>([])
-    
+
     // Mobile Tab State
     const [activeMobileTab, setActiveMobileTab] = useState<'shelf' | 'bench' | 'analysis'>('bench')
 
@@ -255,30 +255,42 @@ export default function LabPage() {
         }
 
         // Check for duplicates
-        const isDuplicate = experiments.some(exp => 
-            exp.experimentName === experimentData.experimentName && 
+        const existingExperiment = experiments.find(exp =>
+            exp.experimentName === experimentData.experimentName &&
             JSON.stringify(exp.chemicals) === JSON.stringify(experimentData.chemicals) &&
             JSON.stringify(exp.reactionDetails) === JSON.stringify(experimentData.reactionDetails)
         )
 
-        if (isDuplicate) {
-            setSaveStatus({
-                isVisible: true,
-                message: 'This experiment has already been saved!',
-                type: 'error'
-            })
-            return
-        }
-
         setIsSaving(true)
         try {
-            await saveExperiment(experimentData)
-            setSaveStatus({
-                isVisible: true,
-                message: 'Experiment saved successfully!',
-                type: 'success'
-            })
-            await syncExperiments()
+            if (existingExperiment) {
+                if (existingExperiment.isSaved) {
+                    setSaveStatus({
+                        isVisible: true,
+                        message: 'This experiment has already been saved!',
+                        type: 'error'
+                    })
+                    setIsSaving(false)
+                    return
+                } else {
+                    // Update the unsaved history log to be marked as saved
+                    await toggleSaveExperiment(existingExperiment._id!, true)
+                    setSaveStatus({
+                        isVisible: true,
+                        message: 'Experiment saved successfully!',
+                        type: 'success'
+                    })
+                    await syncExperiments()
+                }
+            } else {
+                await saveExperiment(experimentData)
+                setSaveStatus({
+                    isVisible: true,
+                    message: 'Experiment saved successfully!',
+                    type: 'success'
+                })
+                await syncExperiments()
+            }
         } catch (error) {
             console.error('Save failed:', error)
             setSaveStatus({
@@ -503,7 +515,7 @@ export default function LabPage() {
                                     <Flame className="w-4 h-4" />
                                     <span>Equipment</span>
                                 </button>
-                                
+
                                 <button
                                     onClick={() => {
                                         if (addTestTubeFunc) {
@@ -524,8 +536,8 @@ export default function LabPage() {
 
                     {/* Scrollable Lab Content */}
                     <div className="flex-1 overflow-y-auto custom-scrollbar relative">
-                         {/* Equipment Quick Access for Mobile */}
-                         <div className="lg:hidden absolute top-2 right-2 z-10">
+                        {/* Equipment Quick Access for Mobile */}
+                        <div className="lg:hidden absolute top-2 right-2 z-10">
                             <button
                                 onClick={() => setOpenEquipmentPanel(true)}
                                 className="p-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 rounded-lg border border-orange-500/20 shadow-sm backdrop-blur-sm"
@@ -625,11 +637,10 @@ export default function LabPage() {
             <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-elixra-charcoal border-t border-elixra-copper/10 z-50 px-4 flex items-center justify-around shadow-lg-up pb-safe">
                 <button
                     onClick={() => setActiveMobileTab('shelf')}
-                    className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all ${
-                        activeMobileTab === 'shelf' 
-                        ? 'text-elixra-bunsen bg-elixra-bunsen/10' 
-                        : 'text-gray-400 hover:text-gray-500'
-                    }`}
+                    className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all ${activeMobileTab === 'shelf'
+                            ? 'text-elixra-bunsen bg-elixra-bunsen/10'
+                            : 'text-gray-400 hover:text-gray-500'
+                        }`}
                 >
                     <Sparkles className="w-6 h-6" />
                     <span className="text-[10px] font-medium">Shelf</span>
@@ -637,11 +648,10 @@ export default function LabPage() {
 
                 <button
                     onClick={() => setActiveMobileTab('bench')}
-                    className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all ${
-                        activeMobileTab === 'bench' 
-                        ? 'text-elixra-bunsen bg-elixra-bunsen/10' 
-                        : 'text-gray-400 hover:text-gray-500'
-                    }`}
+                    className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all ${activeMobileTab === 'bench'
+                            ? 'text-elixra-bunsen bg-elixra-bunsen/10'
+                            : 'text-gray-400 hover:text-gray-500'
+                        }`}
                 >
                     <FlaskConical className="w-6 h-6" />
                     <span className="text-[10px] font-medium">Bench</span>
@@ -649,11 +659,10 @@ export default function LabPage() {
 
                 <button
                     onClick={() => setActiveMobileTab('analysis')}
-                    className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all relative ${
-                        activeMobileTab === 'analysis' 
-                        ? 'text-elixra-bunsen bg-elixra-bunsen/10' 
-                        : 'text-gray-400 hover:text-gray-500'
-                    }`}
+                    className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all relative ${activeMobileTab === 'analysis'
+                            ? 'text-elixra-bunsen bg-elixra-bunsen/10'
+                            : 'text-gray-400 hover:text-gray-500'
+                        }`}
                 >
                     <ClipboardList className="w-6 h-6" />
                     <span className="text-[10px] font-medium">Analysis</span>
@@ -668,7 +677,7 @@ export default function LabPage() {
 
             {/* Floating Features Button - REMOVED in favor of Tab Bar */}
             {/* Features Panel - REMOVED in favor of Tab Bar */}
-            
+
             {/* Custom Scrollbar Styles */}
             <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
