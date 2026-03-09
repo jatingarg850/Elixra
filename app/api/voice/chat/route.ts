@@ -107,7 +107,7 @@ async function createAgent(
       remote_rtc_uids: [userUid],
       idle_timeout: 300,
       llm: {
-        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${process.env.AGORA_LLM_API_KEY}`,
+        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${process.env.AGORA_LLM_API_KEY}`,
         system_messages: [
           {
             parts: [{ text: systemMessage }],
@@ -121,7 +121,7 @@ async function createAgent(
         style: 'gemini',
         ignore_empty: false,
         params: {
-          model: 'gemini-2.0-flash'
+          model: 'gemini-2.5-flash'
         }
       },
       tts: {

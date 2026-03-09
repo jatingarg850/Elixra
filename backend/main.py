@@ -33,7 +33,7 @@ try:
 except Exception as e:
     print(f"Error configuring Gemini API: {e}")
 
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.5-flash"
 
 # CORS configuration
 app.add_middleware(
