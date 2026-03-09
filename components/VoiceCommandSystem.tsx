@@ -136,19 +136,19 @@ const COMMAND_PATTERNS = [
 function fuzzyMatch(str1: string, str2: string): number {
   const s1 = str1.toLowerCase().trim()
   const s2 = str2.toLowerCase().trim()
-  
+
   // Exact match
   if (s1 === s2) return 1.0
-  
+
   // Contains match
   if (s1.includes(s2) || s2.includes(s1)) return 0.8
-  
+
   // Word overlap
   const words1 = s1.split(/\s+/)
   const words2 = s2.split(/\s+/)
   const overlap = words1.filter(word => words2.some(w2 => w2.includes(word) || word.includes(w2))).length
   const totalWords = Math.max(words1.length, words2.length)
-  
+
   return overlap / totalWords
 }
 
@@ -157,17 +157,17 @@ function recognizeCommand(transcript: string): { action: string; confidence: num
   // 1. Try complex natural language parsing
   const complexCmd = parseNaturalLanguageCommand(transcript)
   if (complexCmd) {
-     return {
-        action: 'ADD_COMPLEX',
-        confidence: 1.0,
-        data: complexCmd,
-        pattern: transcript
-     }
+    return {
+      action: 'ADD_COMPLEX',
+      confidence: 1.0,
+      data: complexCmd,
+      pattern: transcript
+    }
   }
 
   let bestMatch = null
   let bestConfidence = 0.0
-  
+
   for (const pattern of COMMAND_PATTERNS) {
     for (const patternText of pattern.patterns) {
       const confidence = fuzzyMatch(transcript, patternText)
@@ -182,41 +182,41 @@ function recognizeCommand(transcript: string): { action: string; confidence: num
       }
     }
   }
-  
+
   // 3. Check for "Add [Element]" generic
   const addRegex = /^(?:add|place|insert)\s+([a-z]+)(?:\s+atom)?$/i
   const addMatch = transcript.match(addRegex)
   if (addMatch) {
-     return {
-        action: 'ADD_ELEMENT',
-        confidence: 0.85,
-        data: { element: addMatch[1] },
-        pattern: transcript
-     }
+    return {
+      action: 'ADD_ELEMENT',
+      confidence: 0.85,
+      data: { element: addMatch[1] },
+      pattern: transcript
+    }
   }
 
   // 4. Fallback: Generic Generation Command
   // "Build caffeine", "Create aspirin", "Show me Vitamin C"
   if (bestConfidence < 0.8) { // If pattern match isn't very strong
-     const genRegex = /^(?:build|make|create|show|generate|display)\s+(?:me\s+|structure\s+of\s+|structure\s+for\s+)?(.+)$/i
-     const match = transcript.match(genRegex)
-     if (match) {
-        const query = match[1].trim()
-        // Filter out simple noise like "molecule" if it's at the end
-        const cleanQuery = query.replace(/\s+molecule$/i, '')
-        
-        if (cleanQuery.length > 2) {
-           // Prefer this over a weak pattern match
-           return {
-              action: 'GENERATE_MOLECULE',
-              confidence: 0.9,
-              data: { query: cleanQuery },
-              pattern: transcript
-           }
+    const genRegex = /^(?:build|make|create|show|generate|display)\s+(?:me\s+|structure\s+of\s+|structure\s+for\s+)?(.+)$/i
+    const match = transcript.match(genRegex)
+    if (match) {
+      const query = match[1].trim()
+      // Filter out simple noise like "molecule" if it's at the end
+      const cleanQuery = query.replace(/\s+molecule$/i, '')
+
+      if (cleanQuery.length > 2) {
+        // Prefer this over a weak pattern match
+        return {
+          action: 'GENERATE_MOLECULE',
+          confidence: 0.9,
+          data: { query: cleanQuery },
+          pattern: transcript
         }
-     }
+      }
+    }
   }
-  
+
   return bestMatch
 }
 
@@ -241,23 +241,23 @@ const logVoiceEvent = async (type: string, message: string, level?: number, conf
   }
 }
 
-export default function VoiceCommandSystem({ 
-  onCommand, 
-  isListening, 
-  onToggleListening, 
-  className 
+export default function VoiceCommandSystem({
+  onCommand,
+  isListening,
+  onToggleListening,
+  className
 }: VoiceCommandSystemProps) {
   const [inputValue, setInputValue] = useState('')
   const [isSupported, setIsSupported] = useState(false)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [hasInteracted, setHasInteracted] = useState(false)
-  
+
   const [suggestion, setSuggestion] = useState<{ text: string, type: 'error' | 'suggestion', action?: () => void } | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
-  
+
   const recognitionRef = useRef<typeof window.SpeechRecognition | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
-  
+
   const PLACEHOLDERS = [
     "Build benzene ring",
     "Add carbon atom",
@@ -280,54 +280,55 @@ export default function VoiceCommandSystem({
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       const recognition = new SpeechRecognition()
-      
+
       recognition.continuous = true
       recognition.interimResults = true
       recognition.lang = 'en-US'
       recognition.maxAlternatives = 1
-      
+
       recognition.onresult = (event: any) => {
         const last = event.results.length - 1
         const transcript = event.results[last][0].transcript
         const isFinal = event.results[last].isFinal
         const confidence = event.results[last][0].confidence
-        
+
         setInputValue(transcript)
         setHasInteracted(true)
-        
+
         logVoiceEvent('TRANSCRIPT', transcript, undefined, confidence)
-        
+
         if (isFinal) {
           handleSubmit(transcript)
         }
       }
-      
+
       recognition.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error)
         logVoiceEvent('ERROR', event.error)
       }
-      
+
       recognition.onend = () => {
         if (isListening) {
           setTimeout(() => {
             try {
               recognition.start()
-            } catch (e) {}
+            } catch (e) { }
           }, 100)
         }
       }
-      
+
       recognitionRef.current = recognition
       setIsSupported(true)
     } else {
       setIsSupported(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isListening])
 
   // Audio Level Monitoring
   useEffect(() => {
     if (!isListening) return
-    
+
     let analyser: AnalyserNode
     let microphone: MediaStreamAudioSourceNode
     let javascriptNode: ScriptProcessorNode
@@ -339,7 +340,7 @@ export default function VoiceCommandSystem({
         const AudioContext = window.AudioContext || window.webkitAudioContext
         const audioContext = new AudioContext()
         audioContextRef.current = audioContext
-        
+
         analyser = audioContext.createAnalyser()
         microphone = audioContext.createMediaStreamSource(stream)
         javascriptNode = audioContext.createScriptProcessor(2048, 1, 1)
@@ -359,10 +360,10 @@ export default function VoiceCommandSystem({
             values += array[i]
           }
           const average = values / array.length
-          
+
           // Log significant levels occasionally
           if (average > 10 && Math.random() < 0.05) {
-             logVoiceEvent('AUDIO_LEVEL', 'Active', average / 255)
+            logVoiceEvent('AUDIO_LEVEL', 'Active', average / 255)
           }
         }
       } catch (e) {
@@ -383,35 +384,35 @@ export default function VoiceCommandSystem({
   // Handle listening state changes
   useEffect(() => {
     if (!recognitionRef.current || !isSupported) return
-    
+
     if (isListening) {
       try {
         recognitionRef.current.start()
-      } catch (error) {}
+      } catch (error) { }
     } else {
       try {
         recognitionRef.current.stop()
-      } catch (error) {}
+      } catch (error) { }
     }
   }, [isListening, isSupported])
 
   const handleSubmit = async (textOverride?: string) => {
     const textToProcess = textOverride || inputValue
     if (!textToProcess.trim()) return
-    
+
     setHasInteracted(true)
     setSuggestion(null)
-    
+
     const parts = textToProcess.split(/\s+(?:and|then|after\s+that)\s+/i)
     let executedCount = 0
     let lastCommand = null
-    
+
     for (const part of parts) {
       const cleanPart = part.trim()
       if (!cleanPart) continue
-      
+
       const command = recognizeCommand(cleanPart)
-      
+
       if (command && command.confidence > 0.6) {
         const voiceCommand: VoiceCommand = {
           command: cleanPart,
@@ -423,32 +424,32 @@ export default function VoiceCommandSystem({
         onCommand(voiceCommand)
         executedCount++
         lastCommand = command
-        
+
         // Delay to allow state updates (crucial for "Clear and Add")
         if (parts.length > 1) {
-            await new Promise(r => setTimeout(r, 800))
-         }
-       } else if (/\b(?:bond|bonding)\b/i.test(cleanPart)) {
-          // Block "bond" keyword if not a valid command
-          setFeedback("Bonding operations must be done via the UI")
-          setTimeout(() => setFeedback(null), 3000)
-       } else if (parts.length === 1) {
-          // Only show error if it's a single command and failed
-          setFeedback(`Unknown command`)
-          setTimeout(() => setFeedback(null), 3000)
-       }
+          await new Promise(r => setTimeout(r, 800))
+        }
+      } else if (/\b(?:bond|bonding)\b/i.test(cleanPart)) {
+        // Block "bond" keyword if not a valid command
+        setFeedback("Bonding operations must be done via the UI")
+        setTimeout(() => setFeedback(null), 3000)
+      } else if (parts.length === 1) {
+        // Only show error if it's a single command and failed
+        setFeedback(`Unknown command`)
+        setTimeout(() => setFeedback(null), 3000)
+      }
     }
-    
+
     if (executedCount > 0 && lastCommand) {
       const command = lastCommand
       const successMsg = `Executed: ${command.pattern}`
-      
+
       if (textOverride) {
         let speakText = "Command executed"
         if (command.action === 'ADD_COMPLEX') {
-           speakText = `Added ${command.data.count} ${command.data.subjectElement} to ${command.data.targetElement}`
+          speakText = `Added ${command.data.count} ${command.data.subjectElement} to ${command.data.targetElement}`
         } else if (command.data?.element) {
-           speakText = `Added ${command.data.element}`
+          speakText = `Added ${command.data.element}`
         }
         speak(speakText)
       } else {
@@ -456,7 +457,7 @@ export default function VoiceCommandSystem({
         setTimeout(() => setFeedback(null), 3000)
       }
     }
-      
+
     if (!textOverride) setInputValue('')
   }
 
@@ -499,11 +500,10 @@ export default function VoiceCommandSystem({
       <div className="glass-panel bg-white/40 dark:bg-white/5 backdrop-blur-2xl border border-elixra-border-subtle rounded-full p-1 flex items-center gap-2 !rounded-full !p-1 shadow-lg hover:shadow-xl transition-shadow duration-300">
         <motion.button
           onClick={onToggleListening}
-          className={`p-2 rounded-full transition-all duration-300 flex-shrink-0 ${
-            isListening 
-              ? 'bg-elixra-bunsen text-white shadow-lg shadow-elixra-bunsen/20 animate-pulse' 
+          className={`p-2 rounded-full transition-all duration-300 flex-shrink-0 ${isListening
+              ? 'bg-elixra-bunsen text-white shadow-lg shadow-elixra-bunsen/20 animate-pulse'
               : 'bg-transparent text-elixra-secondary hover:text-elixra-charcoal dark:hover:text-white'
-          }`}
+            }`}
           whileTap={{ scale: 0.9 }}
           title={isListening ? "Stop listening" : "Start voice commands"}
         >

@@ -4,7 +4,7 @@ import { useDrop } from 'react-dnd'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Chemical, ChemicalContent, ReactionResult } from '@/types/chemistry'
 import { X, Droplets } from 'lucide-react'
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import EquipmentEffectsOrchestrator from '@/components/equipment-effects/EquipmentEffectsOrchestrator'
 import { EquipmentAttachment } from '@/lib/equipment-animations'
@@ -38,7 +38,7 @@ export default function TestTube({
   const [debugMode, setDebugMode] = useState(false)
 
   // Calculate tube position for equipment animations - REAL-TIME BINDING
-  const updateTubePosition = () => {
+  const updateTubePosition = useCallback(() => {
     if (tubeRef.current) {
       const rect = tubeRef.current.getBoundingClientRect()
       console.log(`🔍 TestTube[${id}] updateTubePosition:`, {
@@ -52,7 +52,7 @@ export default function TestTube({
         height: rect.height
       })
     }
-  }
+  }, [id])
 
   useEffect(() => {
     // Initial position
@@ -235,13 +235,13 @@ export default function TestTube({
       >
         {/* Glass Tube Body */}
         <div className="absolute inset-0 z-20 pointer-events-none rounded-b-full border-l-2 border-r-2 border-b-2 border-elixra-copper/20 dark:border-white/20 bg-gradient-to-br from-white/40 to-white/5 dark:from-white/10 dark:to-transparent backdrop-blur-[2px] shadow-[inset_0_0_15px_rgba(255,255,255,0.2)]">
-            {/* Left Highlight */}
-            <div className="absolute top-2 bottom-4 left-1.5 w-1 bg-gradient-to-b from-white/60 to-transparent dark:from-white/40 rounded-full opacity-60 blur-[0.5px]"></div>
-            {/* Right Highlight */}
-            <div className="absolute top-2 bottom-4 right-1.5 w-0.5 bg-gradient-to-b from-white/40 to-transparent dark:from-white/30 rounded-full opacity-40 blur-[0.5px]"></div>
-            
-            {/* Rim Highlight */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-white/40 dark:bg-white/30 rounded-full blur-[1px]"></div>
+          {/* Left Highlight */}
+          <div className="absolute top-2 bottom-4 left-1.5 w-1 bg-gradient-to-b from-white/60 to-transparent dark:from-white/40 rounded-full opacity-60 blur-[0.5px]"></div>
+          {/* Right Highlight */}
+          <div className="absolute top-2 bottom-4 right-1.5 w-0.5 bg-gradient-to-b from-white/40 to-transparent dark:from-white/30 rounded-full opacity-40 blur-[0.5px]"></div>
+
+          {/* Rim Highlight */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-white/40 dark:bg-white/30 rounded-full blur-[1px]"></div>
         </div>
 
         {/* Test tube liquid - fills from BOTTOM with proper rounded shape */}
@@ -403,20 +403,20 @@ export default function TestTube({
 
         {/* Measurement Marks */}
         <div className="absolute left-0 top-[20%] bottom-[15%] w-full pointer-events-none z-30 opacity-60">
-            {[0, 1, 2, 3, 4].map((i) => (
-                <div 
-                    key={i} 
-                    className="absolute left-1 w-2 h-[1px] bg-white/50 shadow-[0_0_2px_rgba(255,255,255,0.5)]"
-                    style={{ top: `${i * 20}%` }}
-                />
-            ))}
-            {[0, 1, 2, 3].map((i) => (
-                <div 
-                    key={`small-${i}`} 
-                    className="absolute left-1 w-1 h-[1px] bg-white/30"
-                    style={{ top: `${10 + i * 20}%` }}
-                />
-            ))}
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="absolute left-1 w-2 h-[1px] bg-white/50 shadow-[0_0_2px_rgba(255,255,255,0.5)]"
+              style={{ top: `${i * 20}%` }}
+            />
+          ))}
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={`small-${i}`}
+              className="absolute left-1 w-1 h-[1px] bg-white/30"
+              style={{ top: `${10 + i * 20}%` }}
+            />
+          ))}
         </div>
 
       </motion.div>

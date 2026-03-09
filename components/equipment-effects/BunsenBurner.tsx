@@ -60,13 +60,14 @@ export default function BunsenBurner({ temperature, isActive, tubePosition }: Bu
         }, spawnRate)
 
         return () => clearInterval(interval)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive, temperature])
 
     if (!isActive) return null
 
     // Ensure minimum visual presence (pilot light) even if temp is 0
     // Increased scale for better visibility
-    const effectiveFlameScale = temperature <= 0 ? 0.4 : 1 
+    const effectiveFlameScale = temperature <= 0 ? 0.4 : 1
     const effectiveOpacity = temperature <= 0 ? 0.8 : 1
 
     return (

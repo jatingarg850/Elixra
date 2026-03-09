@@ -64,6 +64,7 @@ export default function LabTimer({
             setPauseAt(currentTime)
             setStartTime(null)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isTimerRunning, isActive, currentTime, timerMode])
 
     // Update current time using timestamps with visibility control

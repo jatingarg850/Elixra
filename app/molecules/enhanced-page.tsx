@@ -136,6 +136,7 @@ export default function EnhancedMoleculesPage() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleDropAtom = (element: Element, position?: { x: number; y: number; z: number }) => {

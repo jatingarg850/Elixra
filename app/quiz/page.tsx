@@ -95,13 +95,13 @@ const ScalableText = ({ text, className }: { text: string; className?: string })
       // Reset styles to measure natural size
       textElement.style.fontSize = '1.125rem' // text-lg
       textElement.style.lineHeight = '1.5'
-      
+
       let currentSize = 18 // 1.125rem in px
       const minSize = 12 // Minimum readable size
 
       // While content overflows vertically, reduce font size
       while (
-        textElement.scrollHeight > container.clientHeight && 
+        textElement.scrollHeight > container.clientHeight &&
         currentSize > minSize
       ) {
         currentSize -= 0.5
@@ -188,6 +188,7 @@ export default function QuizPage() {
         handleNextQuestion()
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, stage])
 
   const handleStartQuiz = async () => {
@@ -206,7 +207,7 @@ export default function QuizPage() {
       const data = await response.json()
       setSessionId(data.session_id)
       setTotalQuestions(data.total_questions)
-      
+
       // Start with just the first question, store by index
       const firstQuestion = data.first_question
       setQuestions({ 0: firstQuestion })
@@ -275,7 +276,7 @@ export default function QuizPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newAnswer)
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         if (data.suggestions) {
@@ -297,7 +298,7 @@ export default function QuizPage() {
   const handleNextQuestion = async () => {
     if (currentQuestionIndex < totalQuestions - 1) {
       const nextIndex = currentQuestionIndex + 1
-      
+
       // Load next question if not already loaded
       if (!questions[nextIndex]) {
         const nextQuestion = await loadQuestion(sessionId, nextIndex)
@@ -305,7 +306,7 @@ export default function QuizPage() {
           setQuestions(prev => ({ ...prev, [nextIndex]: nextQuestion }))
         }
       }
-      
+
       setCurrentQuestionIndex(nextIndex)
       const nextAnswer = userAnswers.find(a => a.question_id === nextIndex + 1)
       setCurrentAnswer(nextAnswer?.user_answer || '')
@@ -322,7 +323,7 @@ export default function QuizPage() {
   const handlePreviousQuestion = async () => {
     if (currentQuestionIndex > 0) {
       const prevIndex = currentQuestionIndex - 1
-      
+
       // Load previous question if not already loaded
       if (!questions[prevIndex]) {
         const prevQuestion = await loadQuestion(sessionId, prevIndex)
@@ -330,7 +331,7 @@ export default function QuizPage() {
           setQuestions(prev => ({ ...prev, [prevIndex]: prevQuestion }))
         }
       }
-      
+
       setCurrentQuestionIndex(prevIndex)
       const prevAnswer = userAnswers.find(a => a.question_id === prevIndex + 1)
       setCurrentAnswer(prevAnswer?.user_answer || '')
@@ -346,7 +347,7 @@ export default function QuizPage() {
         setQuestions(prev => ({ ...prev, [index]: jumpQuestion }))
       }
     }
-    
+
     setCurrentQuestionIndex(index)
     const prevAnswer = userAnswers.find(a => a.question_id === index + 1)
     setCurrentAnswer(prevAnswer?.user_answer || '')
@@ -416,11 +417,10 @@ export default function QuizPage() {
                           <button
                             key={level}
                             onClick={() => setConfig({ ...config, difficulty: level })}
-                            className={`py-3 px-2 rounded-xl font-medium text-sm transition-all duration-300 ${
-                              config.difficulty === level
+                            className={`py-3 px-2 rounded-xl font-medium text-sm transition-all duration-300 ${config.difficulty === level
                                 ? 'bg-elixra-bunsen text-white shadow-lg shadow-elixra-bunsen/20'
                                 : 'bg-white/50 dark:bg-white/5 text-elixra-secondary hover:bg-white/80 dark:hover:bg-white/10 hover:text-elixra-charcoal dark:hover:text-white border border-elixra-border-subtle'
-                            }`}
+                              }`}
                           >
                             {level.charAt(0).toUpperCase() + level.slice(1)}
                           </button>
@@ -464,11 +464,10 @@ export default function QuizPage() {
                               : [...config.question_types, type.value]
                             setConfig({ ...config, question_types: types })
                           }}
-                          className={`p-4 rounded-xl text-left transition-all duration-300 border ${
-                            config.question_types.includes(type.value)
+                          className={`p-4 rounded-xl text-left transition-all duration-300 border ${config.question_types.includes(type.value)
                               ? 'bg-elixra-copper/10 text-elixra-charcoal dark:text-white border-elixra-copper/50 shadow-lg shadow-elixra-copper/20'
                               : 'bg-white/80 dark:bg-white/10 text-gray-900 dark:text-white border-elixra-border-subtle hover:bg-white hover:border-elixra-copper/30 shadow-sm'
-                          }`}
+                            }`}
                         >
                           <div className="text-2xl mb-2">{type.icon}</div>
                           <div className="text-base font-extrabold truncate text-gray-900 dark:text-white drop-shadow-sm">{type.label}</div>
@@ -492,11 +491,10 @@ export default function QuizPage() {
                               : [...config.topics, topic]
                             setConfig({ ...config, topics })
                           }}
-                          className={`p-3 rounded-lg text-sm font-medium transition-all duration-300 border text-center ${
-                            config.topics.includes(topic)
+                          className={`p-3 rounded-lg text-sm font-medium transition-all duration-300 border text-center ${config.topics.includes(topic)
                               ? 'bg-elixra-bunsen/20 text-elixra-bunsen border-elixra-bunsen/50 shadow-md shadow-elixra-bunsen/10'
                               : 'bg-white/60 dark:bg-white/5 text-gray-900 dark:text-white border-elixra-border-subtle hover:bg-white/80 dark:hover:bg-white/10 hover:border-elixra-bunsen/30'
-                          }`}
+                            }`}
                         >
                           {topic}
                         </button>
@@ -627,11 +625,10 @@ export default function QuizPage() {
                   </div>
                 </div>
                 {config.include_timer && timeLeft !== null && (
-                  <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${
-                    timeLeft <= 10 
-                      ? 'bg-elixra-error/10 border-elixra-error/20 text-elixra-error animate-pulse' 
+                  <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${timeLeft <= 10
+                      ? 'bg-elixra-error/10 border-elixra-error/20 text-elixra-error animate-pulse'
                       : 'bg-elixra-bunsen/10 border-elixra-bunsen/20 text-elixra-bunsen'
-                  }`}>
+                    }`}>
                     <Clock className="h-4 w-4" />
                     <span className="font-mono font-bold text-lg">{formatTime(timeLeft)}</span>
                   </div>
@@ -663,23 +660,21 @@ export default function QuizPage() {
                       key={idx}
                       onClick={() => !showFeedback && setCurrentAnswer(option)}
                       disabled={showFeedback}
-                      className={`w-full text-left p-5 rounded-xl border transition-all duration-300 group relative overflow-hidden h-24 ${
-                        currentAnswer === option
+                      className={`w-full text-left p-5 rounded-xl border transition-all duration-300 group relative overflow-hidden h-24 ${currentAnswer === option
                           ? 'border-elixra-bunsen bg-elixra-bunsen/10 shadow-lg shadow-elixra-bunsen/10'
                           : 'border-elixra-border-subtle bg-white/40 dark:bg-white/5 hover:bg-white/60 dark:hover:bg-white/10 hover:border-elixra-bunsen/30'
-                      } ${showFeedback ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+                        } ${showFeedback ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
                     >
                       <div className="flex items-center gap-4 relative z-10 h-full">
-                        <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border transition-colors ${
-                          currentAnswer === option
+                        <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center border transition-colors ${currentAnswer === option
                             ? 'bg-elixra-bunsen border-elixra-bunsen text-white'
                             : 'border-elixra-border-subtle text-elixra-secondary group-hover:border-elixra-bunsen/50 group-hover:text-elixra-charcoal dark:group-hover:text-white'
-                        }`}>
+                          }`}>
                           {String.fromCharCode(65 + idx)}
                         </div>
-                        <ScalableText 
-                          text={option} 
-                          className={`text-lg ${currentAnswer === option ? 'text-elixra-bunsen-dark dark:text-elixra-bunsen-light font-medium' : 'text-elixra-charcoal dark:text-white'}`} 
+                        <ScalableText
+                          text={option}
+                          className={`text-lg ${currentAnswer === option ? 'text-elixra-bunsen-dark dark:text-elixra-bunsen-light font-medium' : 'text-elixra-charcoal dark:text-white'}`}
                         />
                       </div>
                     </button>
@@ -708,19 +703,17 @@ export default function QuizPage() {
                     initial={{ opacity: 0, height: 0, marginBottom: 0 }}
                     animate={{ opacity: 1, height: 'auto', marginBottom: 24 }}
                     exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                    className={`rounded-xl border overflow-hidden shadow-md ${
-                      currentUserAnswer.user_answer.toLowerCase() === question.correct_answer.toLowerCase()
+                    className={`rounded-xl border overflow-hidden shadow-md ${currentUserAnswer.user_answer.toLowerCase() === question.correct_answer.toLowerCase()
                         ? 'bg-elixra-success/20 dark:bg-elixra-success/15 border-elixra-success/30'
                         : 'bg-elixra-error/20 dark:bg-elixra-error/15 border-elixra-error/30'
-                    }`}
+                      }`}
                   >
                     <div className="p-5">
                       <div className="flex items-start gap-4">
-                        <div className={`p-2 rounded-full ${
-                          currentUserAnswer.user_answer.toLowerCase() === question.correct_answer.toLowerCase()
+                        <div className={`p-2 rounded-full ${currentUserAnswer.user_answer.toLowerCase() === question.correct_answer.toLowerCase()
                             ? 'bg-elixra-success/20 text-elixra-success'
                             : 'bg-elixra-error/20 text-elixra-error'
-                        }`}>
+                          }`}>
                           {currentUserAnswer.user_answer.toLowerCase() === question.correct_answer.toLowerCase() ? (
                             <CheckCircle className="h-6 w-6" />
                           ) : (
@@ -728,11 +721,10 @@ export default function QuizPage() {
                           )}
                         </div>
                         <div className="flex-1">
-                          <h4 className={`text-lg font-bold mb-1 ${
-                            currentUserAnswer.user_answer.toLowerCase() === question.correct_answer.toLowerCase()
+                          <h4 className={`text-lg font-bold mb-1 ${currentUserAnswer.user_answer.toLowerCase() === question.correct_answer.toLowerCase()
                               ? 'text-elixra-success'
                               : 'text-elixra-error'
-                          }`}>
+                            }`}>
                             {currentUserAnswer.user_answer.toLowerCase() === question.correct_answer.toLowerCase()
                               ? 'Correct Answer!'
                               : 'Incorrect Answer'}
@@ -742,7 +734,7 @@ export default function QuizPage() {
                             <Clock className="h-3 w-3" />
                             Time taken: {formatTime(currentUserAnswer.time_taken)}
                           </div>
-                          
+
                           {currentUserAnswer.suggestions && (
                             <div className="mt-4 p-3 bg-elixra-bunsen/20 dark:bg-elixra-bunsen/15 rounded-xl border border-elixra-bunsen/30 flex gap-3 items-start shadow-sm">
                               <Lightbulb className="h-5 w-5 text-elixra-bunsen flex-shrink-0 mt-0.5" />
@@ -818,20 +810,19 @@ export default function QuizPage() {
                     const status = userAnswers.find(a => a.question_id === idx + 1)
                       ? (userAnswers.find(a => a.question_id === idx + 1)?.user_answer.toLowerCase() === questions[idx]?.correct_answer?.toLowerCase() ? 'correct' : 'incorrect')
                       : (idx === currentQuestionIndex ? 'current' : 'pending');
-                    
+
                     return (
                       <button
                         key={idx}
                         onClick={() => handleJumpToQuestion(idx)}
-                        className={`aspect-square rounded-xl font-bold text-sm transition-all flex items-center justify-center border ${
-                          status === 'current'
+                        className={`aspect-square rounded-xl font-bold text-sm transition-all flex items-center justify-center border ${status === 'current'
                             ? 'bg-elixra-bunsen text-white border-elixra-bunsen shadow-lg shadow-elixra-bunsen/25 scale-110 z-10'
                             : status === 'correct'
-                            ? 'bg-elixra-success/20 text-elixra-success border-elixra-success/30'
-                            : status === 'incorrect'
-                            ? 'bg-elixra-error/20 text-elixra-error border-elixra-error/30'
-                            : 'bg-white/50 dark:bg-white/5 text-elixra-secondary border-elixra-border-subtle hover:bg-white/80 dark:hover:bg-white/10 hover:text-elixra-charcoal dark:hover:text-white'
-                        }`}
+                              ? 'bg-elixra-success/20 text-elixra-success border-elixra-success/30'
+                              : status === 'incorrect'
+                                ? 'bg-elixra-error/20 text-elixra-error border-elixra-error/30'
+                                : 'bg-white/50 dark:bg-white/5 text-elixra-secondary border-elixra-border-subtle hover:bg-white/80 dark:hover:bg-white/10 hover:text-elixra-charcoal dark:hover:text-white'
+                          }`}
                       >
                         {idx + 1}
                       </button>
@@ -868,68 +859,67 @@ export default function QuizPage() {
                 <div className="lg:flex-1 lg:overflow-y-auto overflow-visible custom-scrollbar p-6 lg:p-10 flex flex-col relative z-10">
                   {/* Score Visual */}
                   <div className="text-center mb-10 flex-shrink-0">
-                  <div className={`relative w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center ${
-                    isPassed ? 'bg-elixra-success/10 ring-4 ring-elixra-success/20' : 'bg-elixra-copper/10 ring-4 ring-elixra-copper/20'
-                  }`}>
-                    <div className={`absolute inset-0 rounded-full blur-xl ${isPassed ? 'bg-elixra-success/20' : 'bg-elixra-copper/20'}`}></div>
-                    <Trophy className={`relative z-10 h-16 w-16 ${isPassed ? 'text-elixra-success' : 'text-elixra-copper'}`} />
-                  </div>
-                  
-                  <h2 className="text-4xl font-bold text-elixra-charcoal dark:text-white mb-2">
-                    {isPassed ? 'Great Job!' : 'Keep Practicing!'}
-                  </h2>
-                  <p className="text-elixra-secondary text-lg">
-                    You scored <span className={isPassed ? 'text-elixra-success font-bold' : 'text-elixra-copper font-bold'}>{Math.round(scorePercentage)}%</span>
-                  </p>
-                </div>
+                    <div className={`relative w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center ${isPassed ? 'bg-elixra-success/10 ring-4 ring-elixra-success/20' : 'bg-elixra-copper/10 ring-4 ring-elixra-copper/20'
+                      }`}>
+                      <div className={`absolute inset-0 rounded-full blur-xl ${isPassed ? 'bg-elixra-success/20' : 'bg-elixra-copper/20'}`}></div>
+                      <Trophy className={`relative z-10 h-16 w-16 ${isPassed ? 'text-elixra-success' : 'text-elixra-copper'}`} />
+                    </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-10">
-                  <div className="bg-white/40 dark:bg-white/5 rounded-2xl p-4 text-center border border-elixra-border-subtle hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
-                    <div className="text-3xl font-bold text-elixra-bunsen mb-1">{results.correct_answers}</div>
-                    <div className="text-xs text-elixra-secondary uppercase tracking-wider font-semibold">Correct</div>
+                    <h2 className="text-4xl font-bold text-elixra-charcoal dark:text-white mb-2">
+                      {isPassed ? 'Great Job!' : 'Keep Practicing!'}
+                    </h2>
+                    <p className="text-elixra-secondary text-lg">
+                      You scored <span className={isPassed ? 'text-elixra-success font-bold' : 'text-elixra-copper font-bold'}>{Math.round(scorePercentage)}%</span>
+                    </p>
                   </div>
-                  <div className="bg-white/40 dark:bg-white/5 rounded-2xl p-4 text-center border border-elixra-border-subtle hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
-                    <div className="text-3xl font-bold text-elixra-copper mb-1">{results.total_questions - results.correct_answers}</div>
-                    <div className="text-xs text-elixra-secondary uppercase tracking-wider font-semibold">Incorrect</div>
-                  </div>
-                  <div className="bg-white/40 dark:bg-white/5 rounded-2xl p-4 text-center border border-elixra-border-subtle hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
-                    <div className="text-3xl font-bold text-elixra-success mb-1">{Math.round(scorePercentage)}%</div>
-                    <div className="text-xs text-elixra-secondary uppercase tracking-wider font-semibold">Accuracy</div>
-                  </div>
-                  <div className="bg-white/40 dark:bg-white/5 rounded-2xl p-4 text-center border border-elixra-border-subtle hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
-                    <div className="text-3xl font-bold text-pink-500 mb-1">{formatTime(results.total_time_seconds)}</div>
-                    <div className="text-xs text-elixra-secondary uppercase tracking-wider font-semibold">Time</div>
-                  </div>
-                </div>
 
-                {/* Actions */}
-                <div className="flex flex-col gap-3 mt-auto flex-shrink-0 pb-2">
-                  <button
-                    onClick={() => {
-                      setStage('config')
-                      setConfig({
-                        difficulty: 'medium',
-                        num_questions: 5,
-                        question_types: ['mcq'],
-                        include_timer: false,
-                        time_limit_per_question: null,
-                        topics: []
-                      })
-                    }}
-                    className="w-full btn-primary flex items-center justify-center gap-2 shadow-lg shadow-elixra-bunsen/25 hover:shadow-elixra-bunsen/40 hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    <Zap className="h-5 w-5" />
-                    Try Another Quiz
-                  </button>
-                  <Link
-                    href="/lab"
-                    className="w-full btn-ghost flex items-center justify-center gap-2"
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                    Return to Lab
-                  </Link>
-                </div>
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-10">
+                    <div className="bg-white/40 dark:bg-white/5 rounded-2xl p-4 text-center border border-elixra-border-subtle hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
+                      <div className="text-3xl font-bold text-elixra-bunsen mb-1">{results.correct_answers}</div>
+                      <div className="text-xs text-elixra-secondary uppercase tracking-wider font-semibold">Correct</div>
+                    </div>
+                    <div className="bg-white/40 dark:bg-white/5 rounded-2xl p-4 text-center border border-elixra-border-subtle hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
+                      <div className="text-3xl font-bold text-elixra-copper mb-1">{results.total_questions - results.correct_answers}</div>
+                      <div className="text-xs text-elixra-secondary uppercase tracking-wider font-semibold">Incorrect</div>
+                    </div>
+                    <div className="bg-white/40 dark:bg-white/5 rounded-2xl p-4 text-center border border-elixra-border-subtle hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
+                      <div className="text-3xl font-bold text-elixra-success mb-1">{Math.round(scorePercentage)}%</div>
+                      <div className="text-xs text-elixra-secondary uppercase tracking-wider font-semibold">Accuracy</div>
+                    </div>
+                    <div className="bg-white/40 dark:bg-white/5 rounded-2xl p-4 text-center border border-elixra-border-subtle hover:bg-white/60 dark:hover:bg-white/10 transition-colors">
+                      <div className="text-3xl font-bold text-pink-500 mb-1">{formatTime(results.total_time_seconds)}</div>
+                      <div className="text-xs text-elixra-secondary uppercase tracking-wider font-semibold">Time</div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-col gap-3 mt-auto flex-shrink-0 pb-2">
+                    <button
+                      onClick={() => {
+                        setStage('config')
+                        setConfig({
+                          difficulty: 'medium',
+                          num_questions: 5,
+                          question_types: ['mcq'],
+                          include_timer: false,
+                          time_limit_per_question: null,
+                          topics: []
+                        })
+                      }}
+                      className="w-full btn-primary flex items-center justify-center gap-2 shadow-lg shadow-elixra-bunsen/25 hover:shadow-elixra-bunsen/40 hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <Zap className="h-5 w-5" />
+                      Try Another Quiz
+                    </button>
+                    <Link
+                      href="/lab"
+                      className="w-full btn-ghost flex items-center justify-center gap-2"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                      Return to Lab
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -958,19 +948,17 @@ export default function QuizPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 + 0.3 }}
-                    className={`p-6 rounded-3xl border transition-all shadow-md hover:shadow-lg relative z-10 ${
-                      result.is_correct
+                    className={`p-6 rounded-3xl border transition-all shadow-md hover:shadow-lg relative z-10 ${result.is_correct
                         ? 'bg-elixra-success/25 dark:bg-elixra-success/20 border-elixra-success/50 shadow-elixra-success/10 hover:bg-elixra-success/35 dark:hover:bg-elixra-success/30'
                         : 'bg-elixra-error/25 dark:bg-elixra-error/20 border-elixra-error/50 shadow-elixra-error/10 hover:bg-elixra-error/35 dark:hover:bg-elixra-error/30'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start gap-4">
-                      <div className={`p-2 rounded-full flex-shrink-0 mt-1 ${
-                        result.is_correct ? 'bg-elixra-success/20 text-elixra-success' : 'bg-elixra-error/20 text-elixra-error'
-                      }`}>
+                      <div className={`p-2 rounded-full flex-shrink-0 mt-1 ${result.is_correct ? 'bg-elixra-success/20 text-elixra-success' : 'bg-elixra-error/20 text-elixra-error'
+                        }`}>
                         {result.is_correct ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
                       </div>
-                      
+
                       <div className="flex-1 relative z-20">
                         <div className="flex justify-between items-start mb-3">
                           <h4 className="text-lg font-bold text-elixra-charcoal dark:text-white relative z-20">Question {idx + 1}</h4>
@@ -978,21 +966,20 @@ export default function QuizPage() {
                             {formatTime(result.time_taken)}
                           </span>
                         </div>
-                        
+
                         <p className="text-elixra-charcoal dark:text-white mb-4 leading-relaxed font-medium relative z-20">{result.question_text}</p>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 relative z-20">
-                          <div className={`p-3 rounded-xl border shadow-sm ${
-                            result.is_correct 
-                              ? 'bg-elixra-success/30 dark:bg-elixra-success/25 border-elixra-success/40' 
+                          <div className={`p-3 rounded-xl border shadow-sm ${result.is_correct
+                              ? 'bg-elixra-success/30 dark:bg-elixra-success/25 border-elixra-success/40'
                               : 'bg-elixra-error/30 dark:bg-elixra-error/25 border-elixra-error/40'
-                          }`}>
+                            }`}>
                             <span className="text-xs text-elixra-charcoal dark:text-white uppercase tracking-wider block mb-1 font-bold">Your Answer</span>
                             <span className={`font-bold ${result.is_correct ? 'text-elixra-success-dark dark:text-elixra-success-light' : 'text-elixra-error-dark dark:text-elixra-error-light'}`}>
                               {result.user_answer || 'Time Over'}
                             </span>
                           </div>
-                          
+
                           {!result.is_correct && (
                             <div className="p-3 rounded-xl border border-elixra-success/40 bg-elixra-success/30 dark:bg-elixra-success/25 shadow-sm">
                               <span className="text-xs text-elixra-charcoal dark:text-white uppercase tracking-wider block mb-1 font-bold">Correct Answer</span>

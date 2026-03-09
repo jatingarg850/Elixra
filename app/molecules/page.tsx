@@ -2,19 +2,19 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Atom as AtomIcon, 
-  Plus, 
-  Trash2, 
-  RotateCw, 
-  Sparkles, 
-  Search, 
-  Filter, 
-  Undo2, 
-  Redo2, 
-  Mic, 
-  MicOff, 
-  ChevronLeft, 
+import {
+  Atom as AtomIcon,
+  Plus,
+  Trash2,
+  RotateCw,
+  Sparkles,
+  Search,
+  Filter,
+  Undo2,
+  Redo2,
+  Mic,
+  MicOff,
+  ChevronLeft,
   ChevronRight,
   Info,
   Settings,
@@ -65,7 +65,7 @@ import {
 export default function EnhancedMoleculesPage() {
   const router = useRouter()
   const { isAuthenticated, isLoading, saveExperiment, syncExperiments, experiments } = useAuth()
-  
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/auth/signin')
@@ -85,16 +85,16 @@ export default function EnhancedMoleculesPage() {
   const [showBondDialog, setShowBondDialog] = useState(false)
   const [pendingDropElement, setPendingDropElement] = useState<Element | null>(null)
   const [pendingDropPosition, setPendingDropPosition] = useState<{ x: number; y: number; z: number } | null>(null)
-  
+
   // Save/Export states
   const [isSaving, setIsSaving] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [saveStatus, setSaveStatus] = useState<{ isVisible: boolean; message: string; type: 'success' | 'error' }>({
-      isVisible: false,
-      message: '',
-      type: 'success'
+    isVisible: false,
+    message: '',
+    type: 'success'
   })
-  
+
   // Performance optimization
   const orbitControlsRef = useRef<any>(null)
   const spatialHashRef = useRef<SpatialHash>(new SpatialHash())
@@ -102,7 +102,7 @@ export default function EnhancedMoleculesPage() {
   const performanceMonitorRef = useRef<PerformanceMonitor>(new PerformanceMonitor())
   const undoRedoManagerRef = useRef<UndoRedoManager>(new UndoRedoManager())
   const aiAnalyzerRef = useRef<EnhancedAIAnalyzer>(EnhancedAIAnalyzer.getInstance())
-  
+
   // UI states
   const [showPeriodicTable, setShowPeriodicTable] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
@@ -129,7 +129,7 @@ export default function EnhancedMoleculesPage() {
       setFPS(newFPS)
       setQualityLevel(newQuality)
     })
-    
+
     return () => {
       monitor.stop()
       unsubscribe()
@@ -142,7 +142,7 @@ export default function EnhancedMoleculesPage() {
       setAtoms(state.atoms)
       setBonds(state.bonds)
     })
-    
+
     return () => unsubscribe()
   }, [])
 
@@ -189,7 +189,7 @@ export default function EnhancedMoleculesPage() {
             break
         }
       }
-      
+
       // Template hotkeys
       if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
         const template = MOLECULAR_TEMPLATES.find(t => t.hotkey === e.key.toLowerCase())
@@ -201,6 +201,7 @@ export default function EnhancedMoleculesPage() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Lock body scroll when modals are open
@@ -223,9 +224,9 @@ export default function EnhancedMoleculesPage() {
 
   const loadTemplate = (template: MolecularTemplate) => {
     // Scale template atoms to prevent visual overlapping (increase bond length)
-    const SCALE = 2.0 
+    const SCALE = 2.0
     const newState = {
-      atoms: template.atoms.map(atom => ({ 
+      atoms: template.atoms.map(atom => ({
         ...atom,
         x: atom.x * SCALE,
         y: atom.y * SCALE,
@@ -236,13 +237,13 @@ export default function EnhancedMoleculesPage() {
       action: ACTION_TYPES.LOAD_TEMPLATE,
       description: `Loaded ${template.name}`
     }
-    
+
     setAtoms(newState.atoms)
     setBonds(newState.bonds)
     setMoleculeName(template.name)
     setSelectedAtomId(null)
     setSelectedBondId(null)
-    
+
     undoRedoManagerRef.current.recordState(
       newState.atoms,
       newState.bonds,
@@ -263,10 +264,10 @@ export default function EnhancedMoleculesPage() {
     }
 
     let finalPosition: { x: number; y: number; z: number } | null = null
-    
+
     // Determine the reference atom for positioning
     const referenceAtomId = bondsToCreate && bondsToCreate.length > 0 ? bondsToCreate[0].atomId : null
-    
+
     // If this is the first atom and no position specified, place at origin
     if (atoms.length === 0 && !position && !referenceAtomId) {
       finalPosition = { x: 0, y: 0, z: 0 }
@@ -274,55 +275,55 @@ export default function EnhancedMoleculesPage() {
       // Always find a position that's 3+ units away from ALL atoms
       let attempts = 0
       const maxAttempts = 100
-      
+
       while (!finalPosition && attempts < maxAttempts) {
         let candidatePos: { x: number; y: number; z: number }
-        
+
         if (referenceAtomId) {
-        const referenceAtom = atoms.find(a => a.id === referenceAtomId)
-        if (!referenceAtom) break
-        
-        // Use optimal positioning logic for symmetry
-        candidatePos = calculateOptimalBondPosition(referenceAtom, atoms, 2.5)
-        finalPosition = candidatePos
-        break // Found optimal position
-      } else {
-        // Random position in space
-        candidatePos = {
-          x: Math.random() * 8 - 4,
-          y: Math.random() * 8 - 4,
-          z: Math.random() * 8 - 4
+          const referenceAtom = atoms.find(a => a.id === referenceAtomId)
+          if (!referenceAtom) break
+
+          // Use optimal positioning logic for symmetry
+          candidatePos = calculateOptimalBondPosition(referenceAtom, atoms, 2.5)
+          finalPosition = candidatePos
+          break // Found optimal position
+        } else {
+          // Random position in space
+          candidatePos = {
+            x: Math.random() * 8 - 4,
+            y: Math.random() * 8 - 4,
+            z: Math.random() * 8 - 4
+          }
+        }
+
+        // Check if this position is 3+ units from ALL existing atoms
+        const isValid = atoms.every(atom => {
+          const dx = atom.x - candidatePos.x
+          const dy = atom.y - candidatePos.y
+          const dz = atom.z - candidatePos.z
+          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz)
+          return dist >= 3.0
+        })
+
+        if (isValid) {
+          finalPosition = candidatePos
+        }
+        attempts++
+      }
+
+      // If no valid position found, place it anyway
+      if (!finalPosition) {
+        finalPosition = {
+          x: Math.random() * 10 - 5,
+          y: Math.random() * 10 - 5,
+          z: Math.random() * 10 - 5
         }
       }
-      
-      // Check if this position is 3+ units from ALL existing atoms
-      const isValid = atoms.every(atom => {
-        const dx = atom.x - candidatePos.x
-        const dy = atom.y - candidatePos.y
-        const dz = atom.z - candidatePos.z
-        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz)
-        return dist >= 3.0
-      })
-      
-      if (isValid) {
-        finalPosition = candidatePos
-      }
-      attempts++
     }
-
-    // If no valid position found, place it anyway
-    if (!finalPosition) {
-      finalPosition = {
-        x: Math.random() * 10 - 5,
-        y: Math.random() * 10 - 5,
-        z: Math.random() * 10 - 5
-      }
-    }
-  }
 
     if (!finalPosition) {
       // This should theoretically not happen due to the logic above, but for type safety:
-       finalPosition = { x: 0, y: 0, z: 0 }
+      finalPosition = { x: 0, y: 0, z: 0 }
     }
 
     const newAtom: Atom = {
@@ -346,7 +347,7 @@ export default function EnhancedMoleculesPage() {
         type: bond.bondType
       }))
       setBonds([...bonds, ...newBonds])
-      
+
       undoRedoManagerRef.current.recordState(
         updatedAtoms,
         [...bonds, ...newBonds],
@@ -357,7 +358,7 @@ export default function EnhancedMoleculesPage() {
       // Calculate bonds automatically
       const newBonds = calculateBonds(updatedAtoms)
       setBonds(newBonds)
-      
+
       undoRedoManagerRef.current.recordState(
         updatedAtoms,
         newBonds,
@@ -370,11 +371,11 @@ export default function EnhancedMoleculesPage() {
   const removeAtom = useCallback((id: string) => {
     const updatedAtoms = atoms.filter(a => a.id !== id)
     const updatedBonds = bonds.filter(b => b.from !== id && b.to !== id)
-    
+
     setAtoms(updatedAtoms)
     setBonds(updatedBonds)
     setSelectedAtomId(null)
-    
+
     undoRedoManagerRef.current.recordState(
       updatedAtoms,
       updatedBonds,
@@ -387,7 +388,7 @@ export default function EnhancedMoleculesPage() {
     const updatedBonds = bonds.filter(b => b.id !== id)
     setBonds(updatedBonds)
     setSelectedBondId(null)
-    
+
     undoRedoManagerRef.current.recordState(
       atoms,
       updatedBonds,
@@ -408,7 +409,7 @@ export default function EnhancedMoleculesPage() {
     if (canFormBond(fromAtom, toAtom, bonds, newType)) {
       const updatedBonds = bonds.map(b => b.id === bondId ? { ...b, type: newType } : b)
       setBonds(updatedBonds)
-      
+
       undoRedoManagerRef.current.recordState(
         atoms,
         updatedBonds,
@@ -426,7 +427,7 @@ export default function EnhancedMoleculesPage() {
     setSelectedBondId(null)
     setAnalysis(null)
     setValidation(null)
-    
+
     undoRedoManagerRef.current.recordState(
       [],
       [],
@@ -445,7 +446,7 @@ export default function EnhancedMoleculesPage() {
     }
   }, [atoms, bonds])
 
-  const handleAnalyze = async (silent = false) => {
+  const handleAnalyze = useCallback(async (silent = false) => {
     if (atoms.length === 0) return
 
     setAnalyzing(true)
@@ -459,7 +460,7 @@ export default function EnhancedMoleculesPage() {
     } finally {
       setAnalyzing(false)
     }
-  }
+  }, [atoms, bonds])
 
   const handleSave = async () => {
     if (atoms.length === 0) return
@@ -467,77 +468,77 @@ export default function EnhancedMoleculesPage() {
     // 1. Map Atoms to Chemicals
     const chemicalsMap = new Map<string, { count: number, element: string }>()
     atoms.forEach(atom => {
-         const current = chemicalsMap.get(atom.element) || { count: 0, element: atom.element }
-         chemicalsMap.set(atom.element, { count: current.count + 1, element: atom.element })
+      const current = chemicalsMap.get(atom.element) || { count: 0, element: atom.element }
+      chemicalsMap.set(atom.element, { count: current.count + 1, element: atom.element })
     })
 
     const chemicals: ChemicalContent[] = Array.from(chemicalsMap.values()).map(item => ({
-         chemical: {
-             id: item.element.toLowerCase(),
-             name: item.element,
-             formula: item.element,
-             color: '#ffffff', // default
-             state: 'solid', // default
-             category: 'Other'
-         },
-         amount: item.count,
-         unit: 'mol' // using mol as a proxy for atom count
+      chemical: {
+        id: item.element.toLowerCase(),
+        name: item.element,
+        formula: item.element,
+        color: '#ffffff', // default
+        state: 'solid', // default
+        category: 'Other'
+      },
+      amount: item.count,
+      unit: 'mol' // using mol as a proxy for atom count
     }))
 
     // 2. Map Analysis to ReactionResult
     const formula = getMolecularFormula(atoms)
     const reactionDetails: ReactionResult = {
-         balancedEquation: formula,
-         reactionType: 'Molecular Structure',
-         visualObservation: `Structure with ${atoms.length} atoms and ${bonds.length} bonds.`,
-         color: 'N/A',
-         smell: 'N/A',
-         temperatureChange: 'none',
-         gasEvolution: null,
-         emission: null,
-         stateChange: null,
-         phChange: null,
-         productsInfo: [],
-         explanation: {
-             mechanism: analysis?.structure.geometry || 'N/A',
-             bondBreaking: `Contains ${bonds.length} bonds.`,
-             energyProfile: 'Stable structure',
-             atomicLevel: `Hybridization: ${Object.values(analysis?.structure.hybridization || {}).join(', ') || 'N/A'}`,
-             keyConcept: analysis?.properties.polarity || 'Molecular Chemistry'
-         },
-         safety: {
-             riskLevel: analysis?.safety.toxicity || 'Unknown',
-             precautions: analysis?.safety.handling.join(', ') || 'Handle with care',
-             disposal: 'Standard chemical disposal',
-             firstAid: 'Standard first aid',
-             generalHazards: 'N/A'
-         },
-         precipitate: false,
-         products: [],
-         observations: [],
-         confidence: 1.0
+      balancedEquation: formula,
+      reactionType: 'Molecular Structure',
+      visualObservation: `Structure with ${atoms.length} atoms and ${bonds.length} bonds.`,
+      color: 'N/A',
+      smell: 'N/A',
+      temperatureChange: 'none',
+      gasEvolution: null,
+      emission: null,
+      stateChange: null,
+      phChange: null,
+      productsInfo: [],
+      explanation: {
+        mechanism: analysis?.structure.geometry || 'N/A',
+        bondBreaking: `Contains ${bonds.length} bonds.`,
+        energyProfile: 'Stable structure',
+        atomicLevel: `Hybridization: ${Object.values(analysis?.structure.hybridization || {}).join(', ') || 'N/A'}`,
+        keyConcept: analysis?.properties.polarity || 'Molecular Chemistry'
+      },
+      safety: {
+        riskLevel: analysis?.safety.toxicity || 'Unknown',
+        precautions: analysis?.safety.handling.join(', ') || 'Handle with care',
+        disposal: 'Standard chemical disposal',
+        firstAid: 'Standard first aid',
+        generalHazards: 'N/A'
+      },
+      precipitate: false,
+      products: [],
+      observations: [],
+      confidence: 1.0
     }
 
     const experimentData = {
-         name: moleculeName,
-         chemicals: chemicals,
-         reactionDetails: reactionDetails,
-         savedAt: new Date().toISOString(),
-         isSaved: true,
-         glassware: [] // Empty for molecule editor
+      name: moleculeName,
+      chemicals: chemicals,
+      reactionDetails: reactionDetails,
+      savedAt: new Date().toISOString(),
+      isSaved: true,
+      glassware: [] // Empty for molecule editor
     }
 
     setIsSaving(true)
     try {
-         // @ts-ignore
-         await saveExperiment(experimentData)
-         setSaveStatus({ isVisible: true, message: 'Structure saved to history!', type: 'success' })
-         await syncExperiments()
+      // @ts-ignore
+      await saveExperiment(experimentData)
+      setSaveStatus({ isVisible: true, message: 'Structure saved to history!', type: 'success' })
+      await syncExperiments()
     } catch (error) {
-         console.error('Save failed', error)
-         setSaveStatus({ isVisible: true, message: 'Failed to save.', type: 'error' })
+      console.error('Save failed', error)
+      setSaveStatus({ isVisible: true, message: 'Failed to save.', type: 'error' })
     } finally {
-         setIsSaving(false)
+      setIsSaving(false)
     }
   }
 
@@ -546,75 +547,75 @@ export default function EnhancedMoleculesPage() {
 
     setIsExporting(true)
     try {
-        const { generateExperimentPDF } = await import('@/lib/pdfExport')
-        
-        // Mock Experiment data for the PDF generator
-        const chemicalsMap = new Map<string, { count: number, element: string }>()
-        atoms.forEach(atom => {
-             const current = chemicalsMap.get(atom.element) || { count: 0, element: atom.element }
-             chemicalsMap.set(atom.element, { count: current.count + 1, element: atom.element })
-        })
+      const { generateExperimentPDF } = await import('@/lib/pdfExport')
 
-        const chemicals: ChemicalContent[] = Array.from(chemicalsMap.values()).map(item => ({
-             chemical: {
-                 id: item.element.toLowerCase(),
-                 name: item.element,
-                 formula: item.element,
-                 color: '#ffffff',
-                 state: 'solid',
-                 category: 'Other'
-             },
-             amount: item.count,
-             unit: 'mol'
-        }))
+      // Mock Experiment data for the PDF generator
+      const chemicalsMap = new Map<string, { count: number, element: string }>()
+      atoms.forEach(atom => {
+        const current = chemicalsMap.get(atom.element) || { count: 0, element: atom.element }
+        chemicalsMap.set(atom.element, { count: current.count + 1, element: atom.element })
+      })
 
-        const formula = getMolecularFormula(atoms)
-        
-        await generateExperimentPDF({
-            experiment: {
-                name: moleculeName,
-                chemicals: chemicals,
-                glassware: []
-            },
-            result: {
-                balancedEquation: formula,
-                reactionType: 'Molecular Structure',
-                visualObservation: `Structure with ${atoms.length} atoms and ${bonds.length} bonds.`,
-                color: 'N/A',
-                smell: 'N/A',
-                temperatureChange: 'none',
-                gasEvolution: null,
-                emission: null,
-                stateChange: null,
-                phChange: null,
-                productsInfo: [],
-                explanation: {
-                    mechanism: analysis?.structure.geometry || 'N/A',
-                    bondBreaking: `Contains ${bonds.length} bonds.`,
-                    energyProfile: 'Stable structure',
-                    atomicLevel: `Hybridization: ${Object.values(analysis?.structure.hybridization || {}).join(', ') || 'N/A'}`,
-                    keyConcept: analysis?.properties.polarity || 'Molecular Chemistry'
-                },
-                safety: {
-                    riskLevel: analysis?.safety.toxicity || 'Unknown',
-                    precautions: analysis?.safety.handling.join(', ') || 'Handle with care',
-                    disposal: 'Standard chemical disposal',
-                    firstAid: 'Standard first aid',
-                    generalHazards: 'N/A'
-                },
-                precipitate: false,
-                products: [],
-                observations: [],
-                confidence: 1.0
-            },
-            date: new Date(),
-            author: 'Lab User'
-        })
+      const chemicals: ChemicalContent[] = Array.from(chemicalsMap.values()).map(item => ({
+        chemical: {
+          id: item.element.toLowerCase(),
+          name: item.element,
+          formula: item.element,
+          color: '#ffffff',
+          state: 'solid',
+          category: 'Other'
+        },
+        amount: item.count,
+        unit: 'mol'
+      }))
+
+      const formula = getMolecularFormula(atoms)
+
+      await generateExperimentPDF({
+        experiment: {
+          name: moleculeName,
+          chemicals: chemicals,
+          glassware: []
+        },
+        result: {
+          balancedEquation: formula,
+          reactionType: 'Molecular Structure',
+          visualObservation: `Structure with ${atoms.length} atoms and ${bonds.length} bonds.`,
+          color: 'N/A',
+          smell: 'N/A',
+          temperatureChange: 'none',
+          gasEvolution: null,
+          emission: null,
+          stateChange: null,
+          phChange: null,
+          productsInfo: [],
+          explanation: {
+            mechanism: analysis?.structure.geometry || 'N/A',
+            bondBreaking: `Contains ${bonds.length} bonds.`,
+            energyProfile: 'Stable structure',
+            atomicLevel: `Hybridization: ${Object.values(analysis?.structure.hybridization || {}).join(', ') || 'N/A'}`,
+            keyConcept: analysis?.properties.polarity || 'Molecular Chemistry'
+          },
+          safety: {
+            riskLevel: analysis?.safety.toxicity || 'Unknown',
+            precautions: analysis?.safety.handling.join(', ') || 'Handle with care',
+            disposal: 'Standard chemical disposal',
+            firstAid: 'Standard first aid',
+            generalHazards: 'N/A'
+          },
+          precipitate: false,
+          products: [],
+          observations: [],
+          confidence: 1.0
+        },
+        date: new Date(),
+        author: 'Lab User'
+      })
     } catch (error) {
-        console.error('Export failed:', error)
-        alert('Failed to export PDF')
+      console.error('Export failed:', error)
+      alert('Failed to export PDF')
     } finally {
-        setIsExporting(false)
+      setIsExporting(false)
     }
   }
 
@@ -636,15 +637,15 @@ export default function EnhancedMoleculesPage() {
   const autoCompleteWithHydrogen = () => {
     const validator = new ChemicalValidator(atoms, bonds)
     const { newAtoms, newBonds } = validator.autoCompleteWithHydrogen()
-    
+
     if (newAtoms.length === 0) return
 
     const updatedAtoms = [...atoms, ...newAtoms]
     const updatedBonds = [...bonds, ...newBonds]
-    
+
     setAtoms(updatedAtoms)
     setBonds(updatedBonds)
-    
+
     undoRedoManagerRef.current.recordState(
       updatedAtoms,
       updatedBonds,
@@ -678,7 +679,7 @@ export default function EnhancedMoleculesPage() {
 
   const handleGenerateMolecule = async (query: string) => {
     setIsGenerating(true)
-    
+
     try {
       const backendUrl = getBackendUrl()
       const res = await fetch(`${backendUrl}/generate-molecule`, {
@@ -686,33 +687,33 @@ export default function EnhancedMoleculesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })
       })
-      
+
       if (!res.ok) throw new Error("Failed to generate structure")
-      
+
       const template = await res.json()
-      
+
       // Ensure IDs are unique
       const uniqueSuffix = Date.now()
       template.atoms = template.atoms.map((a: any) => ({ ...a, id: `${a.id}-${uniqueSuffix}` }))
-      template.bonds = template.bonds.map((b: any) => ({ 
-         ...b, 
-         id: `${b.id}-${uniqueSuffix}`,
-         from: `${b.from}-${uniqueSuffix}`,
-         to: `${b.to}-${uniqueSuffix}`
+      template.bonds = template.bonds.map((b: any) => ({
+        ...b,
+        id: `${b.id}-${uniqueSuffix}`,
+        from: `${b.from}-${uniqueSuffix}`,
+        to: `${b.to}-${uniqueSuffix}`
       }))
-      
+
       loadTemplate(template)
-      
+
       if ('speechSynthesis' in window) {
-         const u = new SpeechSynthesisUtterance(`Generated structure for ${template.name}`)
-         window.speechSynthesis.speak(u)
+        const u = new SpeechSynthesisUtterance(`Generated structure for ${template.name}`)
+        window.speechSynthesis.speak(u)
       }
-      
+
     } catch (e) {
       console.error(e)
       if ('speechSynthesis' in window) {
-         const u = new SpeechSynthesisUtterance(`Sorry, I couldn't generate structure for ${query}`)
-         window.speechSynthesis.speak(u)
+        const u = new SpeechSynthesisUtterance(`Sorry, I couldn't generate structure for ${query}`)
+        window.speechSynthesis.speak(u)
       }
     } finally {
       setIsGenerating(false)
@@ -723,13 +724,13 @@ export default function EnhancedMoleculesPage() {
     switch (command.action) {
       case 'GENERATE_MOLECULE':
         if (command.data?.query) {
-           handleGenerateMolecule(command.data.query)
+          handleGenerateMolecule(command.data.query)
         }
         break
       case 'ADD_ELEMENT':
         if (command.data?.element) {
-          const element = PERIODIC_TABLE.find(e => 
-            e.symbol.toLowerCase() === command.data.element.toLowerCase() || 
+          const element = PERIODIC_TABLE.find(e =>
+            e.symbol.toLowerCase() === command.data.element.toLowerCase() ||
             e.name.toLowerCase() === command.data.element.toLowerCase()
           )
           if (element) {
@@ -742,19 +743,19 @@ export default function EnhancedMoleculesPage() {
           const { subjectElement, count, bondType, targetElement } = command.data
           const targetEl = PERIODIC_TABLE.find(e => e.symbol === targetElement)
           const subjectEl = PERIODIC_TABLE.find(e => e.symbol === subjectElement)
-          
+
           if (targetEl && subjectEl) {
             // Create a local copy of state to build the structure
             const currentAtoms = [...atoms]
             const currentBonds = [...bonds]
-            
+
             // 1. Create Target Atom
             // Find a good spot - if empty, 0,0,0. If not, random/offset.
             let targetPos = { x: 0, y: 0, z: 0 }
             if (currentAtoms.length > 0) {
-               targetPos = { x: Math.random()*4-2, y: Math.random()*4-2, z: Math.random()*4-2 }
+              targetPos = { x: Math.random() * 4 - 2, y: Math.random() * 4 - 2, z: Math.random() * 4 - 2 }
             }
-            
+
             const targetId = `atom-${Date.now()}-target`
             const targetAtom: Atom = {
               id: targetId,
@@ -765,34 +766,34 @@ export default function EnhancedMoleculesPage() {
               color: targetEl.color
             }
             currentAtoms.push(targetAtom)
-            
+
             // 2. Add Subjects bonded to Target
-            for(let i=0; i<count; i++) {
-               // Use existing logic to find spot relative to target
-               const pos = calculateOptimalBondPosition(targetAtom, currentAtoms, 2.0)
-               
-               const subjectId = `atom-${Date.now()}-sub-${i}`
-               const subjectAtom: Atom = {
-                 id: subjectId,
-                 element: subjectEl.symbol,
-                 x: pos.x,
-                 y: pos.y,
-                 z: pos.z,
-                 color: subjectEl.color
-               }
-               currentAtoms.push(subjectAtom)
-               
-               currentBonds.push({
-                 id: `bond-${Date.now()}-sub-${i}`,
-                 from: targetId,
-                 to: subjectId,
-                 type: bondType
-               })
+            for (let i = 0; i < count; i++) {
+              // Use existing logic to find spot relative to target
+              const pos = calculateOptimalBondPosition(targetAtom, currentAtoms, 2.0)
+
+              const subjectId = `atom-${Date.now()}-sub-${i}`
+              const subjectAtom: Atom = {
+                id: subjectId,
+                element: subjectEl.symbol,
+                x: pos.x,
+                y: pos.y,
+                z: pos.z,
+                color: subjectEl.color
+              }
+              currentAtoms.push(subjectAtom)
+
+              currentBonds.push({
+                id: `bond-${Date.now()}-sub-${i}`,
+                from: targetId,
+                to: subjectId,
+                type: bondType
+              })
             }
-            
+
             setAtoms(currentAtoms)
             setBonds(currentBonds)
-            
+
             undoRedoManagerRef.current.recordState(
               currentAtoms,
               currentBonds,
@@ -836,9 +837,9 @@ export default function EnhancedMoleculesPage() {
 
   if (isLoading) {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-[#020617]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-[#020617]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
     )
   }
 
@@ -945,7 +946,7 @@ export default function EnhancedMoleculesPage() {
                     ✕
                   </button>
                 </div>
-                
+
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-elixra-secondary" />
                   <input
@@ -956,7 +957,7 @@ export default function EnhancedMoleculesPage() {
                     className="w-full pl-12 pr-4 py-3 glass-panel bg-white/60 dark:bg-white/10 border border-elixra-border-subtle rounded-xl focus:border-elixra-bunsen focus:ring-1 focus:ring-elixra-bunsen/50 transition-all text-sm"
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[50vh] overflow-y-auto">
                   {searchTemplates(templateSearch).map(template => (
                     <motion.button
@@ -982,15 +983,15 @@ export default function EnhancedMoleculesPage() {
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="text-sm text-elixra-charcoal/90 dark:text-white/90 mb-2 font-medium">
                         {template.formula} • {template.molecularWeight.toFixed(1)} g/mol
                       </div>
-                      
+
                       <div className="text-xs text-elixra-charcoal/70 dark:text-white/70 mb-3 line-clamp-2">
                         {template.description}
                       </div>
-                      
+
                       <div className="flex flex-wrap gap-1">
                         {template.tags.slice(0, 3).map(tag => (
                           <span key={tag} className="px-2 py-1 bg-elixra-bunsen text-white text-xs rounded font-bold shadow-sm">
@@ -1023,30 +1024,30 @@ export default function EnhancedMoleculesPage() {
               </h3>
               <div className="flex items-center gap-2">
                 <button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="p-2 rounded-lg bg-elixra-bunsen/10 text-elixra-bunsen hover:bg-elixra-bunsen/20 transition-all"
-                    title="Save to History"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="p-2 rounded-lg bg-elixra-bunsen/10 text-elixra-bunsen hover:bg-elixra-bunsen/20 transition-all"
+                  title="Save to History"
                 >
-                    {isSaving ? <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Save className="w-5 h-5" />}
+                  {isSaving ? <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Save className="w-5 h-5" />}
                 </button>
                 <button
-                    onClick={handleExport}
-                    disabled={isExporting}
-                    className="p-2 rounded-lg bg-elixra-copper/10 text-elixra-copper hover:bg-elixra-copper/20 transition-all"
-                    title="Export PDF"
+                  onClick={handleExport}
+                  disabled={isExporting}
+                  className="p-2 rounded-lg bg-elixra-copper/10 text-elixra-copper hover:bg-elixra-copper/20 transition-all"
+                  title="Export PDF"
                 >
-                    {isExporting ? <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Download className="w-5 h-5" />}
+                  {isExporting ? <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Download className="w-5 h-5" />}
                 </button>
                 <button
-                    onClick={() => setShowAnalysis(false)}
-                    className="p-2 rounded-lg glass-panel bg-white/40 dark:bg-white/10 border border-elixra-border-subtle hover:border-elixra-bunsen/30 transition-all"
+                  onClick={() => setShowAnalysis(false)}
+                  className="p-2 rounded-lg glass-panel bg-white/40 dark:bg-white/10 border border-elixra-border-subtle hover:border-elixra-bunsen/30 transition-all"
                 >
-                    ✕
+                  ✕
                 </button>
               </div>
             </div>
-            
+
             <div className="space-y-6 pb-20 sm:pb-0">
               {/* Basic Info */}
               <div className="glass-panel bg-white/60 dark:bg-white/15 backdrop-blur-xl border border-elixra-border-subtle rounded-xl p-4">
@@ -1062,7 +1063,7 @@ export default function EnhancedMoleculesPage() {
                   </div>
                 )}
               </div>
-              
+
               {/* Properties */}
               <div>
                 <div className="text-sm font-semibold text-elixra-charcoal dark:text-white mb-3 flex items-center gap-2">
@@ -1100,7 +1101,7 @@ export default function EnhancedMoleculesPage() {
                   )}
                 </div>
               </div>
-              
+
               {/* Functional Groups */}
               {analysis.structure.functionalGroups.length > 0 && (
                 <div>
@@ -1116,7 +1117,7 @@ export default function EnhancedMoleculesPage() {
                   </div>
                 </div>
               )}
-              
+
               {/* Applications */}
               <div>
                 <div className="text-sm font-semibold text-elixra-charcoal dark:text-white mb-3">
@@ -1138,19 +1139,18 @@ export default function EnhancedMoleculesPage() {
                   )}
                 </div>
               </div>
-              
+
               {/* Safety */}
               <div>
                 <div className="text-sm font-semibold text-elixra-charcoal dark:text-white mb-3">
                   Safety Information
                 </div>
-                <div className={`p-4 rounded-lg border ${
-                  analysis.safety.toxicity === 'non-toxic' 
-                    ? 'bg-elixra-success/20 border-elixra-success/30' 
+                <div className={`p-4 rounded-lg border ${analysis.safety.toxicity === 'non-toxic'
+                    ? 'bg-elixra-success/20 border-elixra-success/30'
                     : analysis.safety.toxicity === 'low-toxicity'
-                    ? 'bg-elixra-copper/20 border-elixra-copper/30'
-                    : 'bg-elixra-error/20 border-elixra-error/30'
-                }`}>
+                      ? 'bg-elixra-copper/20 border-elixra-copper/30'
+                      : 'bg-elixra-error/20 border-elixra-error/30'
+                  }`}>
                   <div className="font-medium capitalize mb-2">
                     {analysis.safety.toxicity.replace('-', ' ')}
                   </div>
@@ -1175,9 +1175,8 @@ export default function EnhancedMoleculesPage() {
           >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-elixra-charcoal dark:text-white flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${
-                  validation.isValid ? 'bg-elixra-success' : 'bg-elixra-error'
-                }`} />
+                <div className={`w-3 h-3 rounded-full ${validation.isValid ? 'bg-elixra-success' : 'bg-elixra-error'
+                  }`} />
                 Chemical Validation
               </h3>
               <button
@@ -1187,14 +1186,13 @@ export default function EnhancedMoleculesPage() {
                 ✕
               </button>
             </div>
-            
+
             <div className="space-y-6 pb-20 sm:pb-0">
               {/* Status */}
-              <div className={`p-4 rounded-xl border ${
-                validation.isValid 
-                  ? 'bg-elixra-success/20 border-elixra-success/30' 
+              <div className={`p-4 rounded-xl border ${validation.isValid
+                  ? 'bg-elixra-success/20 border-elixra-success/30'
                   : 'bg-elixra-error/20 border-elixra-error/30'
-              }`}>
+                }`}>
                 <div className="font-semibold text-lg">
                   {validation.isValid ? '✓ Structure Valid' : '⚠ Structure Issues'}
                 </div>
@@ -1202,7 +1200,7 @@ export default function EnhancedMoleculesPage() {
                   {validation.warnings.length} warnings • {validation.suggestions.length} suggestions
                 </div>
               </div>
-              
+
               {/* Warnings */}
               {validation.warnings.length > 0 && (
                 <div>
@@ -1211,13 +1209,12 @@ export default function EnhancedMoleculesPage() {
                   </div>
                   <div className="space-y-3">
                     {validation.warnings.map((warning, index) => (
-                      <div key={index} className={`p-4 rounded-xl border ${
-                        warning.severity === 'high' 
-                          ? 'bg-elixra-error/20 border-elixra-error/30' 
+                      <div key={index} className={`p-4 rounded-xl border ${warning.severity === 'high'
+                          ? 'bg-elixra-error/20 border-elixra-error/30'
                           : warning.severity === 'medium'
-                          ? 'bg-elixra-copper/20 border-elixra-copper/30'
-                          : 'bg-elixra-bunsen/20 border-elixra-bunsen/30'
-                      }`}>
+                            ? 'bg-elixra-copper/20 border-elixra-copper/30'
+                            : 'bg-elixra-bunsen/20 border-elixra-bunsen/30'
+                        }`}>
                         <div className="font-medium mb-2">{warning.message}</div>
                         <div className="text-xs text-elixra-secondary/70">
                           Atom: {warning.atomSymbol}
@@ -1227,7 +1224,7 @@ export default function EnhancedMoleculesPage() {
                   </div>
                 </div>
               )}
-              
+
               {/* Suggestions */}
               {validation.suggestions.length > 0 && (
                 <div>
@@ -1244,7 +1241,7 @@ export default function EnhancedMoleculesPage() {
                       </div>
                     ))}
                   </div>
-                  
+
                   <button
                     onClick={autoCompleteWithHydrogen}
                     className="w-full mt-4 btn-secondary"
@@ -1254,7 +1251,7 @@ export default function EnhancedMoleculesPage() {
                   </button>
                 </div>
               )}
-              
+
               {/* Electron Counts */}
               <div>
                 <div className="text-sm font-semibold text-elixra-charcoal dark:text-white mb-3">
@@ -1267,7 +1264,7 @@ export default function EnhancedMoleculesPage() {
                     return (
                       <div key={atomId} className="flex items-center justify-between p-3 rounded-lg border bg-white/40 dark:bg-white/10">
                         <div className="flex items-center gap-3">
-                          <div 
+                          <div
                             className="w-4 h-4 rounded-full"
                             style={{ backgroundColor: atom.color }}
                           />
@@ -1330,11 +1327,11 @@ export default function EnhancedMoleculesPage() {
                       const touch = e.changedTouches[0]
                       const target = document.elementFromPoint(touch.clientX, touch.clientY)
                       const dropZone = target?.closest('#molecule-drop-zone')
-                      
+
                       if (dropZone) {
                         handleDropAtom(element)
                       }
-                      
+
                       // @ts-ignore
                       window.__draggedElement = null
                     }}
@@ -1427,7 +1424,7 @@ export default function EnhancedMoleculesPage() {
                   <div className="font-bold text-elixra-charcoal dark:text-white">Redo</div>
                 </button>
               </div>
-              
+
               <AnimatePresence>
                 {showAdvancedControls && (
                   <motion.div
@@ -1474,7 +1471,7 @@ export default function EnhancedMoleculesPage() {
           <div className={`${activeMobileTab === 'editor' ? 'block' : 'hidden'} lg:block lg:col-span-3`}>
             <div className="glass-panel bg-white/40 dark:bg-white/5 backdrop-blur-2xl border border-elixra-border-subtle rounded-3xl p-4 sm:p-6 hover:border-elixra-bunsen/30 transition-all duration-300 relative overflow-hidden group">
               <StaticGrid className="opacity-30" />
-              
+
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 relative z-10 gap-3">
                 <div>
@@ -1502,7 +1499,7 @@ export default function EnhancedMoleculesPage() {
                       Add {selectedElement.symbol}
                     </motion.button>
                   )}
-                  
+
                   <button
                     onClick={() => handleAnalyze()}
                     disabled={analyzing || atoms.length === 0}
@@ -1520,7 +1517,7 @@ export default function EnhancedMoleculesPage() {
                       </>
                     )}
                   </button>
-                  
+
                   {/* Mobile Quick Validate */}
                   <button
                     onClick={handleValidate}
@@ -1541,11 +1538,11 @@ export default function EnhancedMoleculesPage() {
                     <div className="text-white font-medium">Generating Structure with AI...</div>
                   </div>
                 )}
-                
+
                 {/* AI Geometry Insight Overlay */}
                 <AnimatePresence>
                   {analysis && (
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 20 }}
@@ -1563,9 +1560,9 @@ export default function EnhancedMoleculesPage() {
                           Angles: {analysis.structure.bondAngles}
                         </div>
                         {analysis.structure.hybridization && Object.keys(analysis.structure.hybridization).length > 0 && (
-                           <div className="text-xs text-white/70 mt-1 pt-1 border-t border-white/10">
-                              Hybridization: {Object.values(analysis.structure.hybridization)[0]}
-                           </div>
+                          <div className="text-xs text-white/70 mt-1 pt-1 border-t border-white/10">
+                            Hybridization: {Object.values(analysis.structure.hybridization)[0]}
+                          </div>
                         )}
                       </div>
                     </motion.div>
@@ -1585,15 +1582,15 @@ export default function EnhancedMoleculesPage() {
                     enablePerformanceOptimizations={atoms.length > 50}
                   />
                 </MoleculeDropZone>
-                
+
                 {/* Mobile Viewer Controls Overlay */}
                 <div className="absolute bottom-4 right-4 lg:hidden flex flex-col gap-2">
-                   <button 
-                     onClick={() => orbitControlsRef.current?.reset()}
-                     className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white border border-white/20 shadow-lg"
-                   >
-                     <RotateCw className="w-5 h-5" />
-                   </button>
+                  <button
+                    onClick={() => orbitControlsRef.current?.reset()}
+                    className="p-2 bg-white/10 backdrop-blur-md rounded-full text-white border border-white/20 shadow-lg"
+                  >
+                    <RotateCw className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
 
@@ -1615,13 +1612,13 @@ export default function EnhancedMoleculesPage() {
                         </button>
                       </div>
                       <div className="text-sm text-elixra-secondary">
-                        Position: ({atoms.find(a => a.id === selectedAtomId)?.x.toFixed(1)}, 
-                        {atoms.find(a => a.id === selectedAtomId)?.y.toFixed(1)}, 
+                        Position: ({atoms.find(a => a.id === selectedAtomId)?.x.toFixed(1)},
+                        {atoms.find(a => a.id === selectedAtomId)?.y.toFixed(1)},
                         {atoms.find(a => a.id === selectedAtomId)?.z.toFixed(1)})
                       </div>
                     </div>
                   )}
-                  
+
                   {selectedBondId && (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -1669,11 +1666,10 @@ export default function EnhancedMoleculesPage() {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-elixra-charcoal border-t border-elixra-copper/10 z-50 px-4 flex items-center justify-around shadow-lg-up pb-safe">
         <button
           onClick={() => setActiveMobileTab('library')}
-          className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all ${
-            activeMobileTab === 'library' 
-            ? 'text-elixra-bunsen bg-elixra-bunsen/10' 
-            : 'text-gray-400 hover:text-gray-500'
-          }`}
+          className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all ${activeMobileTab === 'library'
+              ? 'text-elixra-bunsen bg-elixra-bunsen/10'
+              : 'text-gray-400 hover:text-gray-500'
+            }`}
         >
           <Search className="w-6 h-6" />
           <span className="text-[10px] font-medium">Library</span>
@@ -1681,11 +1677,10 @@ export default function EnhancedMoleculesPage() {
 
         <button
           onClick={() => setActiveMobileTab('editor')}
-          className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all ${
-            activeMobileTab === 'editor' 
-            ? 'text-elixra-bunsen bg-elixra-bunsen/10' 
-            : 'text-gray-400 hover:text-gray-500'
-          }`}
+          className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all ${activeMobileTab === 'editor'
+              ? 'text-elixra-bunsen bg-elixra-bunsen/10'
+              : 'text-gray-400 hover:text-gray-500'
+            }`}
         >
           <AtomIcon className="w-6 h-6" />
           <span className="text-[10px] font-medium">Editor</span>
@@ -1693,19 +1688,19 @@ export default function EnhancedMoleculesPage() {
 
         <button
           onClick={() => {
-             // Only show analysis if there is data, or if user wants to see stats
-             if (analysis) {
-               setShowAnalysis(true)
-             } else {
-               setShowValidation(true)
-             }
+            // Only show analysis if there is data, or if user wants to see stats
+            if (analysis) {
+              setShowAnalysis(true)
+            } else {
+              setShowValidation(true)
+            }
           }}
           className={`flex flex-col items-center justify-center space-y-1 w-20 py-1 rounded-xl transition-all relative text-gray-400 hover:text-gray-500`}
         >
           <Sparkles className="w-6 h-6" />
           <span className="text-[10px] font-medium">Insights</span>
           {validation?.isValid === false && (
-             <span className="absolute top-1 right-5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-elixra-charcoal animate-pulse"></span>
+            <span className="absolute top-1 right-5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-elixra-charcoal animate-pulse"></span>
           )}
         </button>
       </div>
