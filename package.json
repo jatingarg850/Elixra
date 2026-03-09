@@ -22,7 +22,7 @@
     "canvas-confetti": "^1.6.0",
     "framer-motion": "^10.16.0",
     "html2canvas": "^1.4.1",
-    "jspdf": "^4.0.0",
+    "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.290.0",
     "mongodb": "^6.0.0",
