@@ -14,9 +14,13 @@ interface StopVoiceChatRequest {
 }
 
 function getAgoraHeaders(): Record<string, string> {
-  const customerId = process.env.AGORA_CUSTOMER_ID || '';
-  const customerSecret = process.env.AGORA_CUSTOMER_SECRET || '';
-  const credentials = Buffer.from(`${customerId}:${customerSecret}`).toString('base64');
+  const customerId = (process.env.AGORA_CUSTOMER_ID || '').trim();
+  const customerSecret = (process.env.AGORA_CUSTOMER_SECRET || '').trim();
+  // Safe base64 encoding for both Node and Edge environments
+  const credentialsString = `${customerId}:${customerSecret}`;
+  const credentials = typeof Buffer !== 'undefined'
+    ? Buffer.from(credentialsString).toString('base64')
+    : btoa(credentialsString);
 
   return {
     'Authorization': `Basic ${credentials}`,
@@ -27,9 +31,9 @@ function getAgoraHeaders(): Record<string, string> {
 // Generate RTC token using Agora's official token builder
 function generateRtcToken(channelName: string, uid: number): string {
   try {
-    const appId = process.env.AGORA_APP_ID || '';
-    const appCertificate = process.env.AGORA_APP_CERTIFICATE || '';
-    
+    const appId = (process.env.AGORA_APP_ID || '').trim();
+    const appCertificate = (process.env.AGORA_APP_CERTIFICATE || '').trim();
+
     if (!appId || !appCertificate) {
       console.error('Missing Agora credentials');
       return '';
@@ -37,7 +41,7 @@ function generateRtcToken(channelName: string, uid: number): string {
 
     // Token expires in 24 hours
     const expirationTimeInSeconds = 3600 * 24;
-    
+
     // Use Agora's official token builder
     // RtcRole: 1 = PUBLISHER, 2 = SUBSCRIBER
     const token = RtcTokenBuilder.buildTokenWithUid(
@@ -49,7 +53,7 @@ function generateRtcToken(channelName: string, uid: number): string {
       expirationTimeInSeconds,
       expirationTimeInSeconds // privilegeExpiredTs
     );
-    
+
     console.log('Generated RTC token for channel:', channelName, 'uid:', uid);
     console.log('Token generated successfully');
     return token;
@@ -107,7 +111,7 @@ async function createAgent(
       remote_rtc_uids: [userUid],
       idle_timeout: 300,
       llm: {
-        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${process.env.AGORA_LLM_API_KEY}`,
+        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${(process.env.AGORA_LLM_API_KEY || '').trim()}`,
         system_messages: [
           {
             parts: [{ text: systemMessage }],
@@ -127,11 +131,11 @@ async function createAgent(
       tts: {
         vendor: 'cartesia',
         params: {
-          api_key: process.env.AGORA_TTS_API_KEY,
-          model_id: process.env.AGORA_TTS_MODEL_ID || 'sonic-3',
+          api_key: (process.env.AGORA_TTS_API_KEY || '').trim(),
+          model_id: (process.env.AGORA_TTS_MODEL_ID || 'sonic-3').trim(),
           voice: {
             mode: 'id',
-            id: process.env.AGORA_TTS_VOICE_ID
+            id: (process.env.AGORA_TTS_VOICE_ID || '').trim()
           },
           output_format: {
             container: 'raw',
@@ -141,8 +145,8 @@ async function createAgent(
         }
       },
       asr: {
-        language: process.env.AGORA_ASR_LANGUAGE || 'en-US',
-        vendor: process.env.AGORA_ASR_VENDOR || 'ares',
+        language: (process.env.AGORA_ASR_LANGUAGE || 'en-US').trim(),
+        vendor: (process.env.AGORA_ASR_VENDOR || 'ares').trim(),
         params: {}
       },
       turn_detection: {
@@ -187,7 +191,7 @@ async function createAgent(
     }
   };
 
-  const appId = process.env.AGORA_APP_ID;
+  const appId = (process.env.AGORA_APP_ID || '').trim();
   const url = `${AGORA_BASE_URL}/projects/${appId}/join`;
 
   const response = await fetch(url, {
@@ -209,7 +213,7 @@ async function createAgent(
 }
 
 async function stopAgent(agentId: string): Promise<any> {
-  const appId = process.env.AGORA_APP_ID;
+  const appId = (process.env.AGORA_APP_ID || '').trim();
   const url = `${AGORA_BASE_URL}/projects/${appId}/agents/${agentId}/leave`;
 
   const response = await fetch(url, {
@@ -238,10 +242,12 @@ export async function POST(request: NextRequest) {
     if (action === 'start') {
       const { userProfile } = body as StartVoiceChatRequest;
       const timestamp = Date.now();
-      const userId = (session.user as any).id || (session.user as any).email || 'user';
-      
-      const channelName = `voicechat_${userId}_${timestamp}`;
-      const userUid = 1000 + (Math.abs(userId.charCodeAt(0)) % 9000);
+      const rawUserId = (session.user as any).id || (session.user as any).email || 'user';
+      // Sanitize user ID to contain only alphanumeric characters to avoid any Agora channel name constraints
+      const safeUserId = String(rawUserId).replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30);
+
+      const channelName = `vc_${safeUserId}_${timestamp}`;
+      const userUid = 1000 + (Math.abs(String(rawUserId).charCodeAt(0)) % 9000);
       const agentUid = 2000 + (Math.abs(channelName.charCodeAt(0)) % 9000);
 
       const userToken = generateRtcToken(channelName, userUid);
@@ -257,7 +263,7 @@ export async function POST(request: NextRequest) {
 
       const enhancedProfile = {
         ...userProfile,
-        user_id: userId,
+        user_id: rawUserId,
         email: (session.user as any).email
       };
 
